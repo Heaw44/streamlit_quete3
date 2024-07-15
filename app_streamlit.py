@@ -4,29 +4,38 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from streamlit_authenticator import Authenticate
 from streamlit_option_menu import option_menu
+import streamlit.components.v1 as components
 
+url = 'https://raw.githubusercontent.com/Heaw44/streamlit_quete3/main/credentials.csv'
+# Lire le fichier CSV depuis l'URL
+try:
+    df = pd.read_csv(url, delimiter=';')
+    # st.write(df.head())  # Afficher les premières lignes pour vérifier le contenu
 
-## identifiants
-lesDonneesDesComptes = {
-    'usernames': {
-        'utilisateur': {
-                'name': 'nicolas',
-                'password': 'Worn434Raft',
-                'email': 'rob.nicolas44@gmail.com',
-                'failed_login_attemps': 0, # Sera géré automatiquement
-                'logged_in': False, # Sera géré automatiquement
-                'role': 'utilisateur'
-        },
-        'root': {
-                'name': 'root',
-                'password': 'rootMDP',
-                'email': 'admin@gmail.com',
-                'failed_login_attemps': 0, # Sera géré automatiquement
-                'logged_in': False, # Sera géré automatiquement
-                'role': 'administrateur'
-        }
-    }
-}
+    try:
+        # Convertir le DataFrame au format souhaité
+        lesDonneesDesComptes = {'usernames': {}}
+
+        for index, row in df.iterrows():
+            user_dict = {
+                'name': row['name'],
+                'password': row['password'],
+                'email': row['email'],
+                'failed_login_attemps': row['failed_login_attemps'],
+                'logged_in': row['logged_in'],
+                'role': row['role']
+            }
+            lesDonneesDesComptes['usernames'][row['name']] = user_dict
+
+        # Afficher le dictionnaire pour vérifier le résultat
+        # st.write(lesDonneesDesComptes)
+
+    except Exception as e:
+        st.error(f"Erreur lors de la création du dictionnaire: {e}")
+
+except Exception as e:
+    st.error(f"Erreur lors de la lecture du fichier CSV: {e}")
+
 
 authenticator = Authenticate(
     lesDonneesDesComptes, # Les données des comptes
@@ -41,21 +50,27 @@ name, authentication_status, username = authenticator.login()
 if st.session_state["authentication_status"]:
 
     with st.sidebar:
-        selection = option_menu("Accueil", ["Accueil", 'Les photos de mon chat'], 
-            icons=['house', 'gear'], menu_icon="cast", default_index=1)
-        
+        st.write(f"Bienvenue {name}")
+        # Define the menu options
+        options = ["Accueil \U0001F60A", "Les photos de mon chat \U0001F431"]
+
+        # Create the option menu
+        selection = option_menu("", options,
+                    icons=['house', 'gear'], menu_icon="cast", default_index=0)
+                
         # Le bouton de déconnexion
         authenticator.logout("Déconnexion", "sidebar")
 
 
     ## page d'accueil
-    if selection == "Accueil":
-        st.title("Bienvenue sur ma page")
+    if selection == "Accueil \U0001F60A":
+        st.markdown("# Bienvenue sur ma page :smile:")
         st.image("https://www.theatreinparis.com/uploads/images/article/clapping-header.jpg")
 
     ## page photos animaux
-    elif selection == "Les photos de mon chat":
-        st.title(f"Bienvenue dans l'album de mon chat {name}")
+    
+    elif selection == "Les photos de mon chat \U0001F431":
+        st.markdown("# Bienvenue dans l'album de mon chat :cat:")
         col1, col2, col3 = st.columns(3)
 
         with col1:
